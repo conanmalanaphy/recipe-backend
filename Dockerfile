@@ -1,15 +1,30 @@
-# Use an official OpenJDK runtime as a parent image
-FROM eclipse-temurin:21-jdk-alpine
+# --- STAGE 1: Build the application ---
+# Use a Maven image that includes JDK for compiling
+FROM maven:3.9.9-eclipse-temurin-21-alpine AS builder
 
-# Set the working directory to /app
+# Set the working directory inside the builder container
 WORKDIR /app
 
-# Copy the packaged JAR file into the container's /app directory
-# The `mvn clean install` command that Render runs will put the JAR in target/
-COPY target/*.jar app.jar
+# Copy the Maven pom.xml and source code
+COPY pom.xml .
+COPY src ./src
 
-# Expose the port that your Spring Boot application runs on (default is 8080)
+# Package the application into a JAR file
+# -DskipTests is good practice for builds, assuming tests run separately
+RUN mvn clean install -DskipTests
+
+# --- STAGE 2: Create the final runtime image ---
+# Use a lightweight JRE (Java Runtime Environment) image for the final application
+FROM eclipse-temurin:21-jre-alpine
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the JAR file from the builder stage
+COPY --from=builder /app/target/*.jar app.jar
+
+# Expose the port your Spring Boot application runs on
 EXPOSE 8080
 
-# Define the command to run your Spring Boot application
+# Command to run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
