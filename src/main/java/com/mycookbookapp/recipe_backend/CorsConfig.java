@@ -9,15 +9,16 @@ public class CorsConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**") // Apply CORS to all /api endpoints
+        registry.addMapping("/api/**")
                 .allowedOrigins(
-                        "http://localhost:4321", // Your Astro dev server
-                        "https://recipe-backend-3ata.onrender.com" // Your deployed Astro frontend (once you deploy it)
-                        // Add more origins here if your frontend is deployed elsewhere later
+                        "http://localhost:4321", // For your local Astro dev server
+                        "https://recipe-backend-3ata.onrender.com",
+                        "https://recipe-frontend-ypjn.onrender.com" // <--- ADD THIS EXACT URL for your deployed frontend!
+                        // Ensure there are no typos, and it's HTTPS
                 )
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Allowed HTTP methods
-                .allowedHeaders("*") // Allow all headers
-                .allowCredentials(true) // Allow cookies and authentication headers
-                .maxAge(3600); // Max age of preflight request cache
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true)
+                .maxAge(3600);
     }
 }
