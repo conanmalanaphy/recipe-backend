@@ -46,7 +46,7 @@ public class Recipe {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    // --- Constructors ---
+    // --- Constructors ---test
     // JPA requires a no-argument constructor
     public Recipe() {
     }
