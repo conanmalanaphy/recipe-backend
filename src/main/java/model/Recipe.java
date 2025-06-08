@@ -15,28 +15,30 @@ import java.time.LocalDateTime; // For created/updated timestamps
 // @AllArgsConstructor // If using Lombok (requires a constructor with all fields)
 public class Recipe {
 
-    @Id // Marks this field as the primary key
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increments the ID for new records
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false) // Maps to a database column; 'nullable = false' means it cannot be empty
+    @Column(nullable = false)
     private String title;
 
-    @Column(length = 1000) // Specifies the maximum length of the string
+    @Column(length = 1000, columnDefinition = "TEXT") // <--- ADDED columnDefinition = "TEXT"
     private String description;
 
-    @Column(nullable = false)
-    private String ingredients; // For simplicity, we'll store as a single string for now (e.g., comma-separated or JSON)
+    @Column(nullable = false, columnDefinition = "TEXT") // <--- ADDED columnDefinition = "TEXT"
+    private String ingredients; // For simplicity, we'll store as a single string
 
-    @Column(nullable = false, columnDefinition = "TEXT") // TEXT allows for longer strings for instructions
+    @Column(nullable = false, columnDefinition = "TEXT") // Already had this for instructions
     private String instructions;
 
-    private String prepTime; // e.g., "30 min"
-    private String cookTime; // e.g., "1 hour"
-    private String servings; // e.g., "4-6"
-    private String category; // e.g., "Dessert", "Dinner"
-    private String cuisine;  // e.g., "Italian", "Mexican"
-    private String imageUrl; // URL to an image
+    private String prepTime;
+    private String cookTime;
+    private String servings;
+    private String category;
+    private String cuisine;
+
+    @Column(columnDefinition = "TEXT") // <--- ADDED columnDefinition = "TEXT" (URLs can be long)
+    private String imageUrl;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

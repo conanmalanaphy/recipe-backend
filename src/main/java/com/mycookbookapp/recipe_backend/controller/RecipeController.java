@@ -1,22 +1,27 @@
-package com.mycookbookapp.recipe_backend.controller; // Ensure this package matches your structure
+package com.mycookbookapp.recipe_backend.controller;
 
-import com.mycookbookapp.recipe_backend.model.Recipe; // Import your Recipe entity
-import com.mycookbookapp.recipe_backend.repository.RecipeRepository; // Import your RecipeRepository
-import org.springframework.beans.factory.annotation.Autowired; // For dependency injection
-import org.springframework.http.HttpStatus; // For HTTP status codes
-import org.springframework.http.ResponseEntity; // For building HTTP responses
-import org.springframework.web.bind.annotation.*; // Import all common REST annotations
+import com.mycookbookapp.recipe_backend.model.Recipe;
+import com.mycookbookapp.recipe_backend.repository.RecipeRepository;
+import com.mycookbookapp.recipe_backend.ai.GeminiService; // Import GeminiService
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile; // Import MultipartFile
 
-import java.time.LocalDateTime; // For setting timestamps
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional; // For handling optional results from findById
+import java.util.Optional;
 
-@RestController // Marks this class as a REST Controller, handling web requests
-@RequestMapping("/api/recipes") // Base path for all endpoints in this controller
+@RestController
+@RequestMapping("/api/recipes")
 public class RecipeController {
 
-    @Autowired // Spring will automatically inject an instance of RecipeRepository
+    @Autowired
     private RecipeRepository recipeRepository;
+
+    @Autowired // Inject GeminiService
+    private GeminiService geminiService;
 
     // --- GET All Recipes ---
     // Handles GET requests to /api/recipes
@@ -87,6 +92,22 @@ public class RecipeController {
             return ResponseEntity.noContent().build(); // Return 204 No Content
         } else {
             return ResponseEntity.notFound().build(); // If not found, return 404
+        }
+    }
+
+    // NEW ENDPOINT: Parse recipe from image using Gemini
+    @PostMapping("/parse-image") // e.g., POST to /api/recipes/parse-image
+    public ResponseEntity<Recipe> parseRecipeFromImage(@RequestParam("image") MultipartFile imageFile) {
+        try {
+            Recipe parsedRecipe = geminiService.parseRecipeFromImage(imageFile);
+            return ResponseEntity.ok(parsedRecipe); // Return the parsed recipe data
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null); // Or return an error object
+        } catch (Exception e) {
+            // Log the exception details on the server side
+            System.err.println("Error parsing image with Gemini: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null); // Or return an error object
         }
     }
 }
