@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile; // Import MultipartFile
-
+import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -97,17 +97,17 @@ public class RecipeController {
 
     // NEW ENDPOINT: Parse recipe from image using Gemini
     @PostMapping("/parse-image") // e.g., POST to /api/recipes/parse-image
-    public ResponseEntity<Recipe> parseRecipeFromImage(@RequestParam("image") MultipartFile imageFile) {
+    public ResponseEntity<Recipe> parseRecipeFromImage(@RequestParam("image") MultipartFile[] imageFiles) {
         try {
-            Recipe parsedRecipe = geminiService.parseRecipeFromImage(imageFile);
-            return ResponseEntity.ok(parsedRecipe); // Return the parsed recipe data
+            // Pass the array of files to GeminiService
+            Recipe parsedRecipe = geminiService.parseRecipeFromImage(imageFiles);
+            return ResponseEntity.ok(parsedRecipe);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null); // Or return an error object
+            return ResponseEntity.badRequest().body(null);
         } catch (Exception e) {
-            // Log the exception details on the server side
             System.err.println("Error parsing image with Gemini: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null); // Or return an error object
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 }

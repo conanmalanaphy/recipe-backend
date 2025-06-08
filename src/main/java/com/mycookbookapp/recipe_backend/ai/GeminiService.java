@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -34,21 +35,13 @@ public class GeminiService {
         this.restTemplate = restTemplate;
     }
 
-    public Recipe parseRecipeFromImage(MultipartFile imageFile) throws IOException {
-        if (imageFile.isEmpty()) {
-            throw new IllegalArgumentException("Image file is empty.");
+    public Recipe parseRecipeFromImage(MultipartFile[] imageFiles) throws IOException {
+        if (imageFiles == null || imageFiles.length == 0) {
+            throw new IllegalArgumentException("No image files provided.");
         }
 
-        // 1. Convert image to Base64
-        String base64Image = Base64.getEncoder().encodeToString(imageFile.getBytes());
-        String mimeType = imageFile.getContentType();
-        if (mimeType == null || mimeType.isEmpty()) {
-            mimeType = "image/jpeg"; // Fallback if type not provided
-        }
-
-        // 2. Craft the prompt for Gemini
-        // ... inside parseRecipeFromImage method ...
-        String promptText = "Extract the following details from this image as a JSON object, focusing on recipe information.\n" +
+        // 1. Construct the prompt for Gemini (text part)
+        String promptText = "Extract the following details from these images as a JSON object, focusing on recipe information.\n" +
                 "**For 'ingredients', provide a single comma-separated string, converting any newlines or list items into commas.**\n" +
                 "**For 'instructions', provide a single string with steps separated by periods, converting any newlines or list items into periods.**\n" +
                 "If a field is not found, use an empty string. Ensure the output is valid JSON and directly parsable.\n" +
@@ -64,25 +57,40 @@ public class GeminiService {
                 "  \"cuisine\": \"\",\n" +
                 "  \"imageUrl\": \"\"\n" +
                 "}";
-// ... rest of the method ...
-        // 3. Construct the request body for Gemini Pro Vision API
-        // This maps to the JSON structure:
-        // { "contents": [ { "parts": [ { "text": "prompt" }, { "inlineData": { "mimeType": "...", "data": "..." } } ] } ] }
-        Map<String, Object> inlineData = new HashMap<>();
-        inlineData.put("mimeType", mimeType);
-        inlineData.put("data", base64Image);
 
-        Map<String, Object> imagePart = new HashMap<>();
-        imagePart.put("inlineData", inlineData);
+        // 2. Build the list of content parts for Gemini (text + multiple images)
+        List<Map<String, Object>> parts = new ArrayList<>();
 
+        // Add the text prompt as the first part
         Map<String, Object> textPart = new HashMap<>();
         textPart.put("text", promptText);
+        parts.add(textPart);
 
-        Map<String, Object> contentParts = new HashMap<>();
-        contentParts.put("parts", List.of(textPart, imagePart)); // Text part first, then image part
+        // Add each image file as an inlineData part
+        for (MultipartFile imageFile : imageFiles) {
+            if (!imageFile.isEmpty()) {
+                String base64Image = Base64.getEncoder().encodeToString(imageFile.getBytes());
+                String mimeType = imageFile.getContentType();
+                if (mimeType == null || mimeType.isEmpty()) {
+                    mimeType = "image/jpeg"; // Fallback
+                }
+
+                Map<String, Object> inlineData = new HashMap<>();
+                inlineData.put("mimeType", mimeType);
+                inlineData.put("data", base64Image);
+
+                Map<String, Object> imagePart = new HashMap<>();
+                imagePart.put("inlineData", inlineData);
+                parts.add(imagePart);
+            }
+        }
+
+        // Construct the main content object for the request body
+        Map<String, Object> content = new HashMap<>();
+        content.put("parts", parts);
 
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("contents", List.of(contentParts));
+        requestBody.put("contents", List.of(content)); // Wrap in a list for 'contents'
 
         // 4. Set up HTTP Headers
         HttpHeaders headers = new HttpHeaders();

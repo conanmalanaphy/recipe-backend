@@ -22,13 +22,13 @@ public class Recipe {
     @Column(nullable = false)
     private String title;
 
-    @Column(length = 1000, columnDefinition = "TEXT") // <--- ADDED columnDefinition = "TEXT"
+    @Column(length = 1000, columnDefinition = "TEXT") // For description
     private String description;
 
-    @Column(nullable = false, columnDefinition = "TEXT") // <--- ADDED columnDefinition = "TEXT"
-    private String ingredients; // For simplicity, we'll store as a single string
+    @Column(nullable = false, columnDefinition = "TEXT") // For ingredients
+    private String ingredients;
 
-    @Column(nullable = false, columnDefinition = "TEXT") // Already had this for instructions
+    @Column(nullable = false, columnDefinition = "TEXT") // For instructions
     private String instructions;
 
     private String prepTime;
@@ -37,7 +37,7 @@ public class Recipe {
     private String category;
     private String cuisine;
 
-    @Column(columnDefinition = "TEXT") // <--- ADDED columnDefinition = "TEXT" (URLs can be long)
+    @Column(columnDefinition = "TEXT") // For imageUrl
     private String imageUrl;
 
     @Column(nullable = false)
