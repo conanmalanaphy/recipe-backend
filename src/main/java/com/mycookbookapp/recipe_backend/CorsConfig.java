@@ -13,7 +13,7 @@ public class CorsConfig implements WebMvcConfigurer {
                 .allowedOrigins(
                         "http://localhost:4321", // For your local Astro dev server
                         "https://recipe-backend-3ata.onrender.com",
-                        "https://recipe-frontend-ypjn.onrender.com" // <--- ADD THIS EXACT URL for your deployed frontend!
+                        "https://recipe-frontend-jvcn.onrender.com" // <--- ADD THIS EXACT URL for your deployed frontend!
                         // Ensure there are no typos, and it's HTTPS
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
